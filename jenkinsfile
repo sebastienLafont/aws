@@ -1,0 +1,47 @@
+pipeline {
+agent any
+environment {
+FLASK_APP = "api.py"
+FLASK_ENV = "development"
+}
+stages {
+stage('Checkout') {
+steps {
+checkout([$class: 'GitSCM', branches: [[name: 'master']], extensions: [], userRemoteConfigs: [[url: 'https://github.com/sebastienLafont/aws.git']]])
+}
+}
+stage('Build') {
+steps {
+sh 'pip install -r requirements.txt'
+}
+}
+stage('Test') {
+steps {
+sh 'pytest test_unitaires_python.py'
+}
+}
+stage('Run API') {
+steps {
+sh 'python api.py &'
+}
+}
+stage('Merge to Dev') {
+steps {
+sh 'git checkout Dev && git merge origin/master'
+}
+}
+stage('Deploy to Dev') {
+steps {
+sh 'echo "http://localhost:5000"'
+}
+}
+stage('Web Checker') {
+steps {
+withEnv(["HOME=${env.WORKSPACE}"]) {
+sh 'pip install --user -r requirements.txt'
+sh 'python WebChecker.py'
+}
+}
+}
+}
+}
