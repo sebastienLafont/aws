@@ -1,0 +1,4 @@
+flask
+mysql
+jsonify
+mysql.connector
